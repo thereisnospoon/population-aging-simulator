@@ -15,9 +15,11 @@ class GroupSupervisor(initMembers: Int,
 
   private var membersCount = initMembers
 
+  private def randomAge = initAge + Random.nextInt(transitionAge - initAge)
+
   private val router = {
     val routees = Vector.fill(initMembers) {
-      ActorRefRoutee(context.actorOf(PersonActor.props({initAge + Random.nextInt(transitionAge - initAge)}, transitionAge)))
+      ActorRefRoutee(context.actorOf(PersonActor.props(randomAge, transitionAge)))
     }
     Router(RoundRobinRoutingLogic(), routees)
   }
@@ -30,7 +32,7 @@ class GroupSupervisor(initMembers: Int,
       pathToNextAgeGroupSupervisor.foreach(context.actorSelection(_) ! CreateNewMember)
 
     case CreateNewMember =>
-      val newMember = context.actorOf(PersonActor.props({initAge + Random.nextInt(transitionAge - initAge)}, transitionAge))
+      val newMember = context.actorOf(PersonActor.props(randomAge, transitionAge))
       router.addRoutee(newMember)
       membersCount += 1
 
